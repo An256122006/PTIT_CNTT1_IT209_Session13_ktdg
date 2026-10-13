@@ -1,98 +1,30 @@
 # Campus Hub Base
 
-> Sinh viên: DINH TRONG AN – Lớp: CNTT1
+Mini Project Session 13 — Spring Boot + MySQL (Docker), React frontend (chạy dev riêng).
 
-Campus Hub là dự án nền cho Mini Project Session 13. Ứng dụng cung cấp một không gian chung để sinh viên đăng sự kiện, tìm đồ thất lạc, hỏi đáp, trao đổi đồ dùng và tìm nhóm.
-
-Dự án được giữ ở mức nhỏ để dễ đọc và sửa đổi, nhưng đã có đủ luồng giao diện, API, xác thực, migration và kiểm thử.
-
-## Chức năng có sẵn
-
-- Xem, tìm kiếm và lọc bài đăng.
-- Đăng ký, đăng nhập bằng HTTP Basic.
-- Tạo bài đăng theo chuyên mục.
-- Bình luận và bày tỏ quan tâm.
-- Chủ bài đăng có thể đánh dấu bài đã hoàn tất.
-- Quản trị viên có quyền quản lý trạng thái bài đăng qua API.
-- Health check tại `/actuator/health`.
-
-Tài khoản mẫu được tạo khi ứng dụng khởi động lần đầu:
-
-| Vai trò | Tên đăng nhập | Mật khẩu |
-|---|---|---|
-| Sinh viên | `student` | `student123` |
-| Quản trị viên | `admin` | `admin123` |
-
-Các tài khoản này chỉ dùng để trình diễn. Nhóm cần thay đổi hoặc loại bỏ trước khi sử dụng trong bối cảnh thực tế.
-
-## Kiến trúc
-
-```text
-React frontend
-    │ /api
-    ▼
-Spring Boot monolith
-    │ JDBC
-    ▼
-MySQL
-```
-
-Backend gồm năm bảng chính: `users`, `categories`, `posts`, `comments` và `reactions`. Frontend không sử dụng thư viện giao diện hay thư viện quản lý trạng thái để sinh viên dễ đọc mã nguồn.
-
-## Chạy khi phát triển
-
-Tạo database MySQL tên `campus_hub`, sau đó đặt các biến môi trường nếu thông tin kết nối khác giá trị mặc định:
-
-```powershell
-$env:DB_URL = "jdbc:mysql://localhost:3307/campus_hub"
-$env:DB_USERNAME = "root"
-$env:DB_PASSWORD = "your-password"
-```
-
-Chạy backend:
-
-```powershell
-cd backend
-./gradlew.bat bootRun
-```
-
-Mở terminal khác để chạy frontend:
-
-```powershell
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend phát triển chạy tại `http://localhost:5173` và chuyển tiếp `/api` tới backend tại cổng `8080`.
-
-## API chính
-
-| Phương thức | Đường dẫn | Mục đích | Xác thực |
-|---|---|---|---|
-| `POST` | `/api/auth/register` | Tạo tài khoản | Không |
-| `GET` | `/api/auth/me` | Lấy người dùng hiện tại | Có |
-| `GET` | `/api/categories` | Danh sách chuyên mục | Không |
-| `GET` | `/api/posts` | Tìm và lọc bài đăng | Không |
-| `GET` | `/api/posts/{id}` | Chi tiết bài đăng | Không |
-| `POST` | `/api/posts` | Tạo bài đăng | Có |
-| `PUT` | `/api/posts/{id}` | Sửa bài của mình | Có |
-| `PATCH` | `/api/posts/{id}/status` | Đổi trạng thái | Có |
-| `DELETE` | `/api/posts/{id}` | Xóa bài của mình | Có |
-| `POST` | `/api/posts/{id}/comments` | Thêm bình luận | Có |
-| `POST` | `/api/posts/{id}/reaction` | Bật hoặc tắt quan tâm | Có |
-
-Các API cần xác thực sử dụng header HTTP Basic. Trong môi trường công khai, hệ thống phải được đặt sau HTTPS.
-
-## Đóng gói và chạy bằng Docker
-
-Thông tin sinh viên:
+## 1. Thông tin sinh viên
 
 - Họ tên: **DINH TRONG AN**
 - Lớp: **CNTT1**
 - Mã sinh viên: **[Điền mã sinh viên]**
 
-Chạy kiểm thử backend và build image:
+## 2. Lệnh chạy hệ thống
+
+Yêu cầu: Docker Desktop đang chạy, đã copy `.env.example` thành `.env` (mặc định `DB_PASSWORD=123456` cho môi trường thực hành).
+
+```powershell
+# Kiểm tra cấu hình Compose
+docker compose config
+
+# Build image backend + khởi động MySQL và backend
+docker compose up -d --build
+
+# Xem trạng thái service
+docker compose ps
+docker images campus-hub-backend
+```
+
+Build riêng image backend (nếu cần minh chứng build):
 
 ```powershell
 cd backend
@@ -101,43 +33,45 @@ cd ..
 docker build -t campus-hub-backend ./backend
 ```
 
-Khởi động backend cùng MySQL bằng Docker Compose:
+Dừng hệ thống:
 
 ```powershell
-docker compose config
-docker compose up -d --build
-docker compose ps
+docker compose down
+# Xóa cả dữ liệu MySQL nếu cần:
+# docker compose down -v
 ```
 
-Compose dùng service `mysql` làm hostname database trong container. Có thể đặt mật khẩu MySQL qua biến môi trường `DB_PASSWORD`; nếu không đặt, cấu hình dùng giá trị mặc định dành cho môi trường thực hành. Không lưu mật khẩu thật vào repository.
+## 3. Cổng / URL kiểm tra backend
 
-Backend được công khai tại <http://localhost:8080>. Kiểm tra health endpoint:
+- Backend: `http://localhost:8080` (Compose map `8080:8080`, `SERVER_PORT=8080`)
+- Health check: `http://localhost:8080/actuator/health`
+- MySQL (host): `localhost:3307` (map về `3306` trong container)
 
 ```powershell
 Invoke-RestMethod http://localhost:8080/actuator/health
+# Kết quả mong đợi: status = UP, ví dụ {"status":"UP","groups":["liveness","readiness"]}
 ```
 
-Kết quả mong đợi có trạng thái `UP`. Dừng hệ thống bằng `docker compose down`; thêm `-v` nếu muốn xóa cả dữ liệu MySQL đã lưu.
+Tài khoản mẫu: `student` / `student123`, `admin` / `admin123`.
 
-### Minh chứng
+## 4. Minh chứng
 
-Thêm 2–3 ảnh chụp vào thư mục `screenshots/` rồi cập nhật các đường dẫn bên dưới trước khi nộp:
+Ảnh trong thư mục `image/`, đối chiếu được với `compose.yml` và source code:
 
-1. Docker image Campus Hub sau khi build: `screenshots/docker-image.png`
-2. Trạng thái các service sau khi chạy Compose: `screenshots/compose-services.png`
-3. Kết quả gọi `/actuator/health`: `screenshots/health.png`
+| # | Nội dung | Lệnh tái hiện | File ảnh |
+|---|---|---|---|
+| 1 | Docker image build thành công (`campus-hub-backend`) | `docker images campus-hub-backend` | `image/docker-image.png` |
+| 2 | Trạng thái service sau khi chạy Compose (cả 2 container `healthy`) | `docker compose ps` | `image/compose-services.png` |
+| 3 | Kết quả gọi `/actuator/health` trả về `UP` | `Invoke-RestMethod http://localhost:8080/actuator/health` | `image/health.png` |
 
-## Kiểm tra trước khi bàn giao
+### 1. Docker image đã build thành công
 
-```powershell
-cd backend
-.\gradlew.bat test
-cd ..\frontend
-npm ci
-npm run lint
-npm run build
-```
+![Docker image campus-hub-backend](image/docker-image.png)
 
-## Phạm vi dự án
+### 2. Trạng thái các service sau khi chạy Compose
 
-Dự án nền chưa có tải tệp, thông báo thời gian thực, email, phân trang trên giao diện, lịch sử thay đổi, dashboard và quy trình kiểm duyệt hoàn chỉnh. Nhóm có thể phát triển các hướng này, sửa sâu dự án nền hoặc thay thế công nghệ nếu phù hợp với ý tưởng của mình.
+![Trạng thái service Docker Compose](image/compose-services.png)
+
+### 3. Kết quả gọi `/actuator/health`
+
+![Kết quả actuator health](image/health.png)
