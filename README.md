@@ -1,5 +1,7 @@
 # Campus Hub Base
 
+> Sinh viên: DINH TRONG AN – Lớp: CNTT1
+
 Campus Hub là dự án nền cho Mini Project Session 13. Ứng dụng cung cấp một không gian chung để sinh viên đăng sự kiện, tìm đồ thất lạc, hỏi đáp, trao đổi đồ dùng và tìm nhóm.
 
 Dự án được giữ ở mức nhỏ để dễ đọc và sửa đổi, nhưng đã có đủ luồng giao diện, API, xác thực, migration và kiểm thử.
@@ -86,7 +88,8 @@ Các API cần xác thực sử dụng header HTTP Basic. Trong môi trường c
 
 Thông tin sinh viên:
 
-- Họ tên: **[Điền họ tên]**
+- Họ tên: **DINH TRONG AN**
+- Lớp: **CNTT1**
 - Mã sinh viên: **[Điền mã sinh viên]**
 
 Chạy kiểm thử backend và build image:
