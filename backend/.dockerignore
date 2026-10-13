@@ -1,0 +1,14 @@
+# Files excluded from the Docker build context (backend image).
+.gradle/
+build/
+bin/
+out/
+target/
+*.log
+.git/
+.gitignore
+.idea/
+*.iml
+Dockerfile
+.dockerignore
+README.md
